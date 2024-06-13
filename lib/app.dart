@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:attendance_system/view/cameraview.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -22,12 +23,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // initialRoute: fRoute,
-      // routes: {
-      //   '/login': (context) => const LoginView(),
-      //   '/dashboard': (context) => const DashBoardView(),
-      //   '/locked': (context) => const LockedView(),
-      // },
+      initialRoute: '/camera',
+      routes: {
+        '/camera': (context) => CameraView(),
+      },
     );
   }
 }

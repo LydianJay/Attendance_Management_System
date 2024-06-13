@@ -10,8 +10,8 @@ void main() async {
 
   databaseFactory = databaseFactoryFfi;
   WindowOptions windowOptions = const WindowOptions(
-      size: Size(1000, 600),
-      maximumSize: Size(1000, 600),
+      size: Size(1200, 600),
+      maximumSize: Size(1200, 600),
       center: false,
       skipTaskbar: false,
       titleBarStyle: TitleBarStyle.normal,
