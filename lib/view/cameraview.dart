@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:flutter/services.dart';
 
+import 'package:attendance_system/predictor.dart';
+
 class CameraView extends StatefulWidget {
   const CameraView({super.key});
   @override
@@ -12,12 +14,11 @@ class CameraView extends StatefulWidget {
 
 class _CameraViewState extends State<CameraView> {
   String _cameraInfo = 'Unknown';
+  Predictor predictor = Predictor();
   List<CameraDescription> _cameras = <CameraDescription>[];
   int _cameraIndex = 0;
   int _cameraId = -1;
   bool _initialized = false;
-  bool _recording = false;
-  bool _recordingTimed = false;
   bool _previewPaused = false;
   Size? _previewSize;
   MediaSettings _mediaSettings = const MediaSettings(
@@ -95,15 +96,15 @@ class _CameraViewState extends State<CameraView> {
         _mediaSettings,
       );
 
-      // unawaited(_errorStreamSubscription?.cancel());
-      // _errorStreamSubscription = CameraPlatform.instance
-      //     .onCameraError(cameraId)
-      //     .listen(_onCameraError);
+      unawaited(_errorStreamSubscription?.cancel());
+      _errorStreamSubscription = CameraPlatform.instance
+          .onCameraError(cameraId)
+          .listen(_onCameraError);
 
-      // unawaited(_cameraClosingStreamSubscription?.cancel());
-      // _cameraClosingStreamSubscription = CameraPlatform.instance
-      //     .onCameraClosing(cameraId)
-      //     .listen(_onCameraClosing);
+      unawaited(_cameraClosingStreamSubscription?.cancel());
+      _cameraClosingStreamSubscription = CameraPlatform.instance
+          .onCameraClosing(cameraId)
+          .listen(_onCameraClosing);
 
       final Future<CameraInitializedEvent> initialized =
           CameraPlatform.instance.onCameraInitialized(cameraId).first;
@@ -142,8 +143,7 @@ class _CameraViewState extends State<CameraView> {
           _cameraId = -1;
           _cameraIndex = 0;
           _previewSize = null;
-          _recording = false;
-          _recordingTimed = false;
+
           _cameraInfo =
               'Failed to initialize camera: ${e.code}: ${e.description}';
         });
@@ -161,8 +161,7 @@ class _CameraViewState extends State<CameraView> {
             _initialized = false;
             _cameraId = -1;
             _previewSize = null;
-            _recording = false;
-            _recordingTimed = false;
+
             _previewPaused = false;
             _cameraInfo = 'Camera disposed';
           });
@@ -184,59 +183,10 @@ class _CameraViewState extends State<CameraView> {
 
   Future<void> _takePicture() async {
     final XFile file = await CameraPlatform.instance.takePicture(_cameraId);
+    final predictionResult = await predictor.predict(file.path);
+
+    debugPrint(predictionResult.toString());
     _showInSnackBar('Picture captured to: ${file.path}');
-  }
-
-  Future<void> _recordTimed(int seconds) async {
-    if (_initialized && _cameraId > 0 && !_recordingTimed) {
-      // unawaited(CameraPlatform.instance
-      //     .onVideoRecordedEvent(_cameraId)
-      //     .first
-      //     .then((VideoRecordedEvent event) async {
-      //   if (mounted) {
-      //     setState(() {
-      //       _recordingTimed = false;
-      //     });
-
-      //     _showInSnackBar('Video captured to: ${event.file.path}');
-      //   }
-      // }));
-
-      await CameraPlatform.instance.startVideoRecording(
-        _cameraId,
-        maxVideoDuration: Duration(seconds: seconds),
-      );
-
-      if (mounted) {
-        setState(() {
-          _recordingTimed = true;
-        });
-      }
-    }
-  }
-
-  Future<void> _toggleRecord() async {
-    if (_initialized && _cameraId > 0) {
-      if (_recordingTimed) {
-        /// Request to stop timed recording short.
-        await CameraPlatform.instance.stopVideoRecording(_cameraId);
-      } else {
-        if (!_recording) {
-          await CameraPlatform.instance.startVideoRecording(_cameraId);
-        } else {
-          final XFile file =
-              await CameraPlatform.instance.stopVideoRecording(_cameraId);
-
-          _showInSnackBar('Video captured to: ${file.path}');
-        }
-
-        if (mounted) {
-          setState(() {
-            _recording = !_recording;
-          });
-        }
-      }
-    }
   }
 
   Future<void> _togglePreview() async {
@@ -256,7 +206,6 @@ class _CameraViewState extends State<CameraView> {
 
   Future<void> _switchCamera() async {
     if (_cameras.isNotEmpty) {
-      // select next index;
       _cameraIndex = (_cameraIndex + 1) % _cameras.length;
       if (_initialized && _cameraId >= 0) {
         await _disposeCurrentCamera();
@@ -282,23 +231,6 @@ class _CameraViewState extends State<CameraView> {
     });
     if (_initialized && _cameraId >= 0) {
       // Re-inits camera with new resolution preset.
-      await _disposeCurrentCamera();
-      await _initializeCamera();
-    }
-  }
-
-  Future<void> _onAudioChange(bool recordAudio) async {
-    setState(() {
-      _mediaSettings = MediaSettings(
-        resolutionPreset: _mediaSettings.resolutionPreset,
-        fps: _mediaSettings.fps,
-        videoBitrate: _mediaSettings.videoBitrate,
-        audioBitrate: _mediaSettings.audioBitrate,
-        enableAudio: recordAudio,
-      );
-    });
-    if (_initialized && _cameraId >= 0) {
-      // Re-inits camera with new record audio setting.
       await _disposeCurrentCamera();
       await _initializeCamera();
     }
@@ -342,119 +274,106 @@ class _CameraViewState extends State<CameraView> {
       );
     }).toList();
 
-    return MaterialApp(
-      scaffoldMessengerKey: _scaffoldMessengerKey,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: ListView(
-          children: <Widget>[
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Plugin example app'),
+      ),
+      body: ListView(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 5,
+              horizontal: 10,
+            ),
+            child: Text(_cameraInfo),
+          ),
+          if (_cameras.isEmpty)
+            ElevatedButton(
+              onPressed: _fetchCameras,
+              child: const Text('Re-check available cameras'),
+            ),
+          if (_cameras.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                DropdownButton<ResolutionPreset>(
+                  value: _mediaSettings.resolutionPreset,
+                  onChanged: (ResolutionPreset? value) {
+                    if (value != null) {
+                      _onResolutionChange(value);
+                    }
+                  },
+                  items: resolutionItems,
+                ),
+                ElevatedButton(
+                  onPressed:
+                      _initialized ? _disposeCurrentCamera : _initializeCamera,
+                  child:
+                      Text(_initialized ? 'Dispose camera' : 'Create camera'),
+                ),
+                ElevatedButton(
+                  onPressed: _initialized ? _takePicture : null,
+                  child: const Text('Take picture'),
+                ),
+                ElevatedButton(
+                  onPressed: _initialized ? _togglePreview : null,
+                  child: Text(
+                    _previewPaused ? 'Resume preview' : 'Pause preview',
+                  ),
+                ),
+                // ElevatedButton (
+                //   onPressed: _initialized ? _toggleRecord : null,
+                //   child: Text(
+                //     (_recording || _recordingTimed)
+                //         ? 'Stop recording'
+                //         : 'Record Video',
+                //   ),
+                // ),
+                // ElevatedButton(
+                //   onPressed: (_initialized && !_recording && !_recordingTimed)
+                //       ? () => _recordTimed(5)
+                //       : null,
+                //   child: const Text(
+                //     'Record 5 seconds',
+                //   ),
+                // ),
+                if (_cameras.length > 1) ...<Widget>[
+                  const SizedBox(width: 5),
+                  ElevatedButton(
+                    onPressed: _switchCamera,
+                    child: const Text(
+                      'Switch camera',
+                    ),
+                  ),
+                ]
+              ],
+            ),
+          const SizedBox(height: 5),
+          if (_initialized && _cameraId > 0 && _previewSize != null)
             Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: 5,
-                horizontal: 10,
+                vertical: 10,
               ),
-              child: Text(_cameraInfo),
+              child: Align(
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxHeight: 500,
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 1000 / 800,
+                    // aspectRatio: _previewSize!.width / _previewSize!.height,
+                    child: _buildPreview(),
+                  ),
+                ),
+              ),
             ),
-            if (_cameras.isEmpty)
-              ElevatedButton(
-                onPressed: _fetchCameras,
-                child: const Text('Re-check available cameras'),
+          if (_previewSize != null)
+            Center(
+              child: Text(
+                'Preview size: ${_previewSize!.width.toStringAsFixed(0)}x${_previewSize!.height.toStringAsFixed(0)}',
               ),
-            if (_cameras.isNotEmpty)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  DropdownButton<ResolutionPreset>(
-                    value: _mediaSettings.resolutionPreset,
-                    onChanged: (ResolutionPreset? value) {
-                      if (value != null) {
-                        _onResolutionChange(value);
-                      }
-                    },
-                    items: resolutionItems,
-                  ),
-                  const SizedBox(width: 20),
-                  const Text('Audio:'),
-                  Switch(
-                      value: _mediaSettings.enableAudio,
-                      onChanged: (bool state) => _onAudioChange(state)),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: _initialized
-                        ? _disposeCurrentCamera
-                        : _initializeCamera,
-                    child:
-                        Text(_initialized ? 'Dispose camera' : 'Create camera'),
-                  ),
-                  const SizedBox(width: 5),
-                  ElevatedButton(
-                    onPressed: _initialized ? _takePicture : null,
-                    child: const Text('Take picture'),
-                  ),
-                  const SizedBox(width: 5),
-                  ElevatedButton(
-                    onPressed: _initialized ? _togglePreview : null,
-                    child: Text(
-                      _previewPaused ? 'Resume preview' : 'Pause preview',
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ElevatedButton(
-                    onPressed: _initialized ? _toggleRecord : null,
-                    child: Text(
-                      (_recording || _recordingTimed)
-                          ? 'Stop recording'
-                          : 'Record Video',
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  ElevatedButton(
-                    onPressed: (_initialized && !_recording && !_recordingTimed)
-                        ? () => _recordTimed(5)
-                        : null,
-                    child: const Text(
-                      'Record 5 seconds',
-                    ),
-                  ),
-                  if (_cameras.length > 1) ...<Widget>[
-                    const SizedBox(width: 5),
-                    ElevatedButton(
-                      onPressed: _switchCamera,
-                      child: const Text(
-                        'Switch camera',
-                      ),
-                    ),
-                  ]
-                ],
-              ),
-            const SizedBox(height: 5),
-            if (_initialized && _cameraId > 0 && _previewSize != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                ),
-                child: Align(
-                  child: Container(
-                    constraints: const BoxConstraints(
-                      maxHeight: 500,
-                    ),
-                    child: AspectRatio(
-                      aspectRatio: _previewSize!.width / _previewSize!.height,
-                      child: _buildPreview(),
-                    ),
-                  ),
-                ),
-              ),
-            if (_previewSize != null)
-              Center(
-                child: Text(
-                  'Preview size: ${_previewSize!.width.toStringAsFixed(0)}x${_previewSize!.height.toStringAsFixed(0)}',
-                ),
-              ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
