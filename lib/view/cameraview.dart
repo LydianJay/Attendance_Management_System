@@ -61,9 +61,9 @@ class _CameraViewState extends State<CameraView> {
       } else {
         debugPrint('Cameras found ${cameras.length}');
         debugPrint('Cameras index ${cameras.toString()}');
-        cameraIndex = 1;
+        cameraIndex = 0;
 
-        cameraInfo = 'Found camera: ${cameras[1].name}';
+        cameraInfo = cameras.first.name;
       }
     } on PlatformException catch (e) {
       cameraInfo = 'Failed to get cameras: ${e.code}: ${e.message}';
@@ -184,7 +184,7 @@ class _CameraViewState extends State<CameraView> {
   Future<void> _takePicture() async {
     final XFile file = await CameraPlatform.instance.takePicture(_cameraId);
     final predictionResult = await predictor.predict(file.path);
-
+    await _showResult(context, predictionResult);
     debugPrint(predictionResult.toString());
     _showInSnackBar('Picture captured to: ${file.path}');
   }
@@ -263,8 +263,45 @@ class _CameraViewState extends State<CameraView> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
+  Future<void> _showResult(BuildContext context, List<double> res) {
+    int idx = -1;
+    debugPrint(res.length.toString());
+    double max = res.first;
+    for (int i = 0; i < res.length; i++) {
+      debugPrint('index: $i');
+      if (res[i] > max && res[i] >= 0.75) {
+        idx = i;
+        max = res[i];
+      }
+    }
+
+    List<String> names = ['Arjelyn', 'Sander', 'Arnold'];
+    //debugPrint('idx:$idx');
+
+    String nameResult = idx <= -1 ? 'Person Not Recognized' : names[idx];
+
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Image Capture Result'),
+            content: Text('Employee Name: ${nameResult}'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Confirm'),
+              ),
+            ],
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
+    double scrWidth = MediaQuery.of(context).size.width;
+    double scrHeight = MediaQuery.of(context).size.height;
     final List<DropdownMenuItem<ResolutionPreset>> resolutionItems =
         ResolutionPreset.values
             .map<DropdownMenuItem<ResolutionPreset>>((ResolutionPreset value) {
@@ -276,7 +313,14 @@ class _CameraViewState extends State<CameraView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plugin example app'),
+        title: const Text('Camera'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.person),
+          ),
+        ],
       ),
       body: ListView(
         children: <Widget>[
@@ -285,7 +329,7 @@ class _CameraViewState extends State<CameraView> {
               vertical: 5,
               horizontal: 10,
             ),
-            child: Text(_cameraInfo),
+            child: Text('Selected Camera: $_cameraInfo'),
           ),
           if (_cameras.isEmpty)
             ElevatedButton(
@@ -294,7 +338,7 @@ class _CameraViewState extends State<CameraView> {
             ),
           if (_cameras.isNotEmpty)
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 DropdownButton<ResolutionPreset>(
                   value: _mediaSettings.resolutionPreset,
@@ -308,8 +352,7 @@ class _CameraViewState extends State<CameraView> {
                 ElevatedButton(
                   onPressed:
                       _initialized ? _disposeCurrentCamera : _initializeCamera,
-                  child:
-                      Text(_initialized ? 'Dispose camera' : 'Create camera'),
+                  child: Text(_initialized ? 'Dispose camera' : 'Start camera'),
                 ),
                 ElevatedButton(
                   onPressed: _initialized ? _takePicture : null,
@@ -357,11 +400,11 @@ class _CameraViewState extends State<CameraView> {
               child: Align(
                 child: Container(
                   constraints: const BoxConstraints(
-                    maxHeight: 500,
+                    maxHeight: 800,
                   ),
                   child: AspectRatio(
-                    aspectRatio: 1000 / 800,
-                    // aspectRatio: _previewSize!.width / _previewSize!.height,
+                    // aspectRatio: 1000 / 800,
+                    aspectRatio: _previewSize!.width / _previewSize!.height,
                     child: _buildPreview(),
                   ),
                 ),

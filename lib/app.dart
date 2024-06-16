@@ -18,14 +18,33 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       restorationScopeId: 'ID',
-      title: 'Bgry Taft Information System',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(backgroundColor: Colors.deepPurple),
+        elevatedButtonTheme: const ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: MaterialStatePropertyAll(
+              Color.fromARGB(155, 104, 58, 183),
+            ),
+            textStyle: MaterialStatePropertyAll(
+              TextStyle(
+                color: Colors.white,
+                fontFamily: 'Helvetica',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        
       ),
       initialRoute: '/camera',
       routes: {
-        '/camera': (context) => CameraView(),
+        '/camera': (context) => const CameraView(),
       },
     );
   }

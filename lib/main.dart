@@ -10,13 +10,15 @@ void main() async {
 
   databaseFactory = databaseFactoryFfi;
   WindowOptions windowOptions = const WindowOptions(
-      size: Size(1000, 800),
-      maximumSize: Size(1000, 800),
-      center: false,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.normal,
-      windowButtonVisibility: false,
-      title: "Attendance System");
+    // size: Size(1000, 800),
+    // maximumSize: Size(1000, 800),
+    center: false,
+    fullScreen: true,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.normal,
+    windowButtonVisibility: false,
+    title: "Attendance System",
+  );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();
     await windowManager.focus();
