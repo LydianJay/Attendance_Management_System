@@ -1,10 +1,11 @@
 import 'dart:async';
-
+import 'dart:ffi' as dart_ffi;
 import 'package:flutter/material.dart';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:flutter/services.dart';
-
 import 'package:attendance_system/predictor.dart';
+import 'package:attendance_system/db/database.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class CameraView extends StatefulWidget {
   const CameraView({super.key});
@@ -22,7 +23,7 @@ class _CameraViewState extends State<CameraView> {
   bool _previewPaused = false;
   Size? _previewSize;
   MediaSettings _mediaSettings = const MediaSettings(
-    resolutionPreset: ResolutionPreset.low,
+    resolutionPreset: ResolutionPreset.medium,
     fps: 15,
     videoBitrate: 200000,
     audioBitrate: 32000,
@@ -274,11 +275,56 @@ class _CameraViewState extends State<CameraView> {
         max = res[i];
       }
     }
-
+    idx = 0;
     List<String> names = ['Arjelyn', 'Sander', 'Arnold'];
-    //debugPrint('idx:$idx');
 
     String nameResult = idx <= -1 ? 'Person Not Recognized' : names[idx];
+
+    List<Widget> okay = [
+      TextButton(
+        onPressed: () async {
+          var qResult = await DataBase.db!.query(
+            'employee',
+            columns: ['rID'],
+            where: 'fname = ?',
+            whereArgs: [names[idx]],
+          );
+
+          int id = int.parse(qResult.first['rID'].toString());
+          DateTime currentTime = DateTime.now();
+          String timeIn = '${currentTime.hour}:${currentTime.minute}';
+          String date =
+              '${currentTime.month},${currentTime.day},${currentTime.year}';
+          var values = {
+            'rID': id,
+            'timeIn': timeIn,
+            'date': date,
+          };
+
+          await DataBase.db!.insert('attendance', values) == 0
+              ? debugPrint('Error Insert')
+              : debugPrint('Success Insert!');
+
+          Navigator.of(context).pop();
+        },
+        child: const Text('Check In'),
+      ),
+      TextButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        child: const Text('Not Me'),
+      ),
+    ];
+
+    List<Widget> bad = [
+      TextButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        child: const Text('Try Again'),
+      ),
+    ];
 
     return showDialog(
         context: context,
@@ -286,14 +332,7 @@ class _CameraViewState extends State<CameraView> {
           return AlertDialog(
             title: const Text('Image Capture Result'),
             content: Text('Employee Name: ${nameResult}'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Confirm'),
-              ),
-            ],
+            actions: idx <= -1 ? bad : okay,
           );
         });
   }
@@ -317,7 +356,9 @@ class _CameraViewState extends State<CameraView> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/dashboard');
+            },
             icon: const Icon(Icons.person),
           ),
         ],

@@ -33,6 +33,7 @@ dependencies:
   tflite_flutter: ^0.10.4
   image_picker: ^1.0.4
   camera_windows: ^0.2.2
+  sidebarx: ^0.17.1
   image: ^4.0.17
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.2+1
