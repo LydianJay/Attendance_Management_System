@@ -19,7 +19,7 @@ class DataBase {
   }
 
   static Future<void> _createTables() async {
-    debugPrint('Creating tables...');
+    // debugPrint('Creating tables...');
     //await db!.execute('DROP TABLE IF EXISTS employee');
     await db!.execute('''
 

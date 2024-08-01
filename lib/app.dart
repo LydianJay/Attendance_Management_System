@@ -15,13 +15,13 @@ class _MyAppState extends State<MyApp> {
   void getDB() async {
     await DataBase.initDatabase();
 
-    final res = await DataBase.db!.query('attendance');
+    // final res = await DataBase.db!.query('attendance');
 
-    debugPrint('length: ${res.length}');
-    for (var v in res) {
-      debugPrint(
-          'ID ${v['rID'].toString()} - TimeIn: ${v['timeIn'].toString()} - Date: ${v['date'].toString()}');
-    }
+    // debugPrint('length: ${res.length}');
+    // for (var v in res) {
+    //   debugPrint(
+    //       'ID ${v['rID'].toString()} - TimeIn: ${v['timeIn'].toString()} - Date: ${v['date'].toString()}');
+    // }
 
     // var value = {
     //   'fname': 'Sander',
@@ -86,7 +86,7 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      initialRoute: '/camera',
+      initialRoute: '/dashboard',
       routes: {
         '/camera': (context) => const CameraView(),
         '/dashboard': (context) => const DashBoard(),
