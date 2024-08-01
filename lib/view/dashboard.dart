@@ -19,6 +19,7 @@ class _DashBoardState extends State<DashBoard> {
             items: const [
               SidebarXItem(icon: Icons.home, label: 'Home'),
               SidebarXItem(icon: Icons.search, label: 'Search'),
+              SidebarXItem(icon: Icons.search, label: 'Details'),
             ],
           ),
         ],
