@@ -141,7 +141,34 @@ class _DashBoardState extends State<DashBoard> {
                           ),
                           width: scrWidth,
                           height: scrHeight * 0.09,
-                          child: const Text('Company Name'),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(left: 20),
+                                child: const Text(
+                                  'Some Company Inc.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'Calibre',
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(right: 20),
+                                child: IconButton.outlined(
+                                  color: Colors.white,
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.camera_alt_outlined,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         _getCurrentPanel(scrWidth, scrHeight),
                       ],

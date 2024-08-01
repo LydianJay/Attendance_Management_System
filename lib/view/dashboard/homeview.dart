@@ -9,6 +9,20 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  final TextStyle _tsh1 = const TextStyle(
+    fontSize: 20,
+    fontFamily: 'Helvetica',
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+    shadows: [Shadow(color: Colors.black, blurRadius: 0.1)],
+  );
+  final TextStyle _tsb1 = const TextStyle(
+    fontSize: 26,
+    fontFamily: 'Helvetica',
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+    shadows: [Shadow(color: Colors.black, blurRadius: 0.1)],
+  );
   List<BarChartGroupData> _data() {
     return [
       BarChartGroupData(
@@ -39,42 +53,113 @@ class _HomeViewState extends State<HomeView> {
         Container(
           margin: const EdgeInsets.only(top: 60, bottom: 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Container(
-                width: scrWidth * 0.12,
-                height: scrHeight * 0.05,
-                decoration: BoxDecoration(color: Colors.blue),
-                child: Text('No of employee: 3'),
+                width: scrWidth * 0.15,
+                height: scrHeight * 0.15,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 37, 151, 33),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      'Employees',
+                      style: _tsh1,
+                    ),
+                    Text(
+                      '3',
+                      style: _tsb1,
+                    ),
+                  ],
+                ),
               ),
               Container(
-                width: scrWidth * 0.12,
-                height: scrHeight * 0.05,
-                decoration: BoxDecoration(color: Colors.blue),
-                child: Text('No of employee: 3'),
+                width: scrWidth * 0.15,
+                height: scrHeight * 0.15,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      'On Leave',
+                      style: _tsh1,
+                    ),
+                    Text(
+                      '0',
+                      style: _tsb1,
+                    ),
+                  ],
+                ),
               ),
               Container(
-                width: scrWidth * 0.12,
-                height: scrHeight * 0.05,
-                decoration: BoxDecoration(color: Colors.blue),
-                child: Text('No of employee: 3'),
+                width: scrWidth * 0.15,
+                height: scrHeight * 0.15,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 243, 33, 33),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      'Absents',
+                      style: _tsh1,
+                    ),
+                    Text(
+                      '31',
+                      style: _tsb1,
+                    ),
+                  ],
+                ),
               ),
               Container(
-                width: scrWidth * 0.12,
-                height: scrHeight * 0.05,
-                decoration: BoxDecoration(color: Colors.blue),
-                child: Text('No of employee: 3'),
+                width: scrWidth * 0.15,
+                height: scrHeight * 0.15,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 134, 134, 134),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      'Late',
+                      style: _tsh1,
+                    ),
+                    Text(
+                      '3',
+                      style: _tsb1,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
         Container(
-          margin: const EdgeInsets.only(top: 125),
+          margin: const EdgeInsets.only(top: 100),
           width: scrWidth * 0.6,
           height: scrHeight * 0.5,
           child: BarChart(
             BarChartData(
               barGroups: _data(),
+              titlesData: FlTitlesData(
+                topTitles: AxisTitles(
+                    axisNameWidget: Text(
+                      'General Analytics',
+                      style: _tsh1.copyWith(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w100,
+                      ),
+                    ),
+                    axisNameSize: 32),
+              ),
             ),
             swapAnimationDuration: const Duration(milliseconds: 150),
             swapAnimationCurve: Curves.linear,
