@@ -160,7 +160,9 @@ class _DashBoardState extends State<DashBoard> {
                                 margin: const EdgeInsets.only(right: 20),
                                 child: IconButton.outlined(
                                   color: Colors.white,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, '/camera');
+                                  },
                                   icon: const Icon(
                                     Icons.camera_alt_outlined,
                                     color: Colors.white,

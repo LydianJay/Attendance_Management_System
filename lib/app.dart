@@ -72,10 +72,10 @@ class _MyAppState extends State<MyApp> {
         appBarTheme: const AppBarTheme(backgroundColor: Colors.deepPurple),
         elevatedButtonTheme: const ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStatePropertyAll(
+            backgroundColor: WidgetStatePropertyAll(
               Color.fromARGB(155, 104, 58, 183),
             ),
-            textStyle: MaterialStatePropertyAll(
+            textStyle: WidgetStatePropertyAll(
               TextStyle(
                 color: Colors.white,
                 fontFamily: 'Helvetica',
