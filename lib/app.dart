@@ -86,10 +86,10 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      initialRoute: '/dashboard',
+      initialRoute: '/camera',
       routes: {
         '/camera': (context) => const CameraView(),
-        '/dashboard': (context) => const DashBoard(),
+        // '/dashboard': (context) => const DashBoard(),
       },
     );
   }

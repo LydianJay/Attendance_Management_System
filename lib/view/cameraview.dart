@@ -355,12 +355,12 @@ class _CameraViewState extends State<CameraView> {
         title: const Text('Camera'),
         centerTitle: true,
         actions: [
-          IconButton(
-            onPressed: () async {
-              await Navigator.pushNamed(context, '/dashboard');
-            },
-            icon: const Icon(Icons.person),
-          ),
+          // IconButton(
+          //   onPressed: () async {
+          //     await Navigator.pushNamed(context, '/dashboard');
+          //   },
+          //   icon: const Icon(Icons.person),
+          // ),
         ],
       ),
       body: ListView(
