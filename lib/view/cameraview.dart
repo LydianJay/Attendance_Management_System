@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi' as dart_ffi;
+import 'package:attendance_system/controller/attendance.dart';
 import 'package:flutter/material.dart';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:flutter/services.dart';
@@ -184,9 +185,10 @@ class _CameraViewState extends State<CameraView> {
 
   Future<void> _takePicture() async {
     final XFile file = await CameraPlatform.instance.takePicture(_cameraId);
-    final predictionResult = await predictor.predict(file.path);
-    await _showResult(context, predictionResult);
-    debugPrint(predictionResult.toString());
+    await AttendanceCtrl.checkIn(file);
+    // final predictionResult = await predictor.predict(file.path);
+    // await _showResult(context, predictionResult);
+    // debugPrint(predictionResult.toString());
     _showInSnackBar('Picture captured to: ${file.path}');
   }
 
@@ -354,14 +356,6 @@ class _CameraViewState extends State<CameraView> {
       appBar: AppBar(
         title: const Text('Camera'),
         centerTitle: true,
-        actions: [
-          // IconButton(
-          //   onPressed: () async {
-          //     await Navigator.pushNamed(context, '/dashboard');
-          //   },
-          //   icon: const Icon(Icons.person),
-          // ),
-        ],
       ),
       body: ListView(
         children: <Widget>[
@@ -405,22 +399,6 @@ class _CameraViewState extends State<CameraView> {
                     _previewPaused ? 'Resume preview' : 'Pause preview',
                   ),
                 ),
-                // ElevatedButton (
-                //   onPressed: _initialized ? _toggleRecord : null,
-                //   child: Text(
-                //     (_recording || _recordingTimed)
-                //         ? 'Stop recording'
-                //         : 'Record Video',
-                //   ),
-                // ),
-                // ElevatedButton(
-                //   onPressed: (_initialized && !_recording && !_recordingTimed)
-                //       ? () => _recordTimed(5)
-                //       : null,
-                //   child: const Text(
-                //     'Record 5 seconds',
-                //   ),
-                // ),
                 if (_cameras.length > 1) ...<Widget>[
                   const SizedBox(width: 5),
                   ElevatedButton(
