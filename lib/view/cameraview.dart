@@ -55,7 +55,7 @@ class _CameraViewState extends State<CameraView> {
     String cameraInfo;
     List<CameraDescription> cameras = <CameraDescription>[];
 
-    int cameraIndex = 0;
+    // int cameraIndex = 0;
     try {
       cameras = await CameraPlatform.instance.availableCameras();
       if (cameras.isEmpty) {
@@ -63,7 +63,7 @@ class _CameraViewState extends State<CameraView> {
       } else {
         debugPrint('Cameras found ${cameras.length}');
         debugPrint('Cameras index ${cameras.toString()}');
-        cameraIndex = 0;
+        // cameraIndex = 0;
 
         cameraInfo = cameras.first.name;
       }
@@ -73,7 +73,7 @@ class _CameraViewState extends State<CameraView> {
 
     if (mounted) {
       setState(() {
-        _cameraIndex = cameraIndex;
+        // _cameraIndex = cameraIndex;
         _cameras = cameras;
         _cameraInfo = cameraInfo;
       });
@@ -185,11 +185,29 @@ class _CameraViewState extends State<CameraView> {
 
   Future<void> _takePicture() async {
     final XFile file = await CameraPlatform.instance.takePicture(_cameraId);
-    await AttendanceCtrl.checkIn(file);
-    // final predictionResult = await predictor.predict(file.path);
-    // await _showResult(context, predictionResult);
-    // debugPrint(predictionResult.toString());
-    _showInSnackBar('Picture captured to: ${file.path}');
+    final result = await AttendanceCtrl.checkIn(file);
+    if (result != null) {
+      if (result['name']!.isNotEmpty) {
+        _showResult(context, result['name']!, int.parse(result['id']!));
+      } else {
+        return showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Image Capture Result'),
+                content: const Text('Face Not Recognized'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              );
+            });
+      }
+    }
   }
 
   Future<void> _togglePreview() async {
@@ -266,50 +284,23 @@ class _CameraViewState extends State<CameraView> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
-  Future<void> _showResult(BuildContext context, List<double> res) {
-    int idx = -1;
-    debugPrint(res.length.toString());
-    double max = res.first;
-    for (int i = 0; i < res.length; i++) {
-      debugPrint('index: $i');
-      if (res[i] > max && res[i] >= 0.75) {
-        idx = i;
-        max = res[i];
-      }
-    }
-    idx = 0;
-    List<String> names = ['Arjelyn', 'Sander', 'Arnold'];
-
-    String nameResult = idx <= -1 ? 'Person Not Recognized' : names[idx];
-
+  Future<void> _showResult(BuildContext context, String name, int id) {
     List<Widget> okay = [
       TextButton(
         onPressed: () async {
-          var qResult = await DataBase.db!.query(
-            'employee',
-            columns: ['rID'],
-            where: 'fname = ?',
-            whereArgs: [names[idx]],
-          );
-
-          int id = int.parse(qResult.first['rID'].toString());
-          DateTime currentTime = DateTime.now();
-          String timeIn = '${currentTime.hour}:${currentTime.minute}';
-          String date =
-              '${currentTime.month},${currentTime.day},${currentTime.year}';
-          var values = {
-            'rID': id,
-            'timeIn': timeIn,
-            'date': date,
-          };
-
-          await DataBase.db!.insert('attendance', values) == 0
-              ? debugPrint('Error Insert')
-              : debugPrint('Success Insert!');
-
+          // Insert attendance to db
+          AttendanceCtrl.insertAttendance(id, true);
           Navigator.of(context).pop();
         },
         child: const Text('Check In'),
+      ),
+      TextButton(
+        onPressed: () async {
+          // Insert attendance to db
+          AttendanceCtrl.insertAttendance(id, false);
+          Navigator.of(context).pop();
+        },
+        child: const Text('Check Out'),
       ),
       TextButton(
         onPressed: () {
@@ -319,22 +310,13 @@ class _CameraViewState extends State<CameraView> {
       ),
     ];
 
-    List<Widget> bad = [
-      TextButton(
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
-        child: const Text('Try Again'),
-      ),
-    ];
-
     return showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Image Capture Result'),
-            content: Text('Employee Name: ${nameResult}'),
-            actions: idx <= -1 ? bad : okay,
+            content: Text('Employee Name: $name'),
+            actions: okay,
           );
         });
   }

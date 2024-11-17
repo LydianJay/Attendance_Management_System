@@ -5,8 +5,8 @@ import 'package:attendance_system/config/config.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AttendanceCtrl {
-  static Future<String?>? checkIn(XFile imageFile) async {
-    final uri = Uri.http(DbConfig.ip);
+  static Future<Map<String, String>?>? checkIn(XFile imageFile) async {
+    final uri = Uri.http(DbConfig.pythonServer);
 
     debugPrint(uri.toString());
     final header = {"Content-Type": "application/json"};
@@ -20,9 +20,30 @@ class AttendanceCtrl {
       debugPrint('Received Data!');
       final data = await response.stream.bytesToString();
       debugPrint(data);
+      final retVal = jsonDecode(data);
+
+      return {'name': retVal['name'], 'id': retVal['id'].toString()};
     } else {
       debugPrint("ERROR - Status Code: ${response.statusCode}");
     }
     return null;
+  }
+
+  static void insertAttendance(int id, bool isCheckIn) async {
+    final uri = Uri.http(DbConfig.ip, '/attendance-system/public/insert');
+
+    debugPrint(uri.toString());
+    final header = {"Content-Type": "application/json"};
+    var req = http.Request('POST', uri);
+    req.body = "{ \"id\":\"$id\",\"type\":\"${isCheckIn ? '1' : '2'}\" }";
+    req.headers.addAll(header);
+    final response = await req.send();
+    if (response.statusCode == 200) {
+      debugPrint('Received Data!');
+      final data = await response.stream.bytesToString();
+      debugPrint(data);
+    } else {
+      debugPrint("ERROR - Status Code: ${response.statusCode}");
+    }
   }
 }
