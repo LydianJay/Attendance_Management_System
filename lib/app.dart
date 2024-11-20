@@ -1,4 +1,5 @@
 import 'package:attendance_system/db/database.dart';
+import 'package:attendance_system/view/settings.dart';
 // import 'package:attendance_system/view/dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:attendance_system/view/cameraview.dart';
@@ -12,11 +13,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
-    
   }
 
   // This widget is the root of your application.
@@ -56,9 +55,10 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      initialRoute: '/camera',
+      initialRoute: '/settings',
       routes: {
         '/camera': (context) => const CameraView(),
+        '/settings': (context) => const SettingsView(),
         // '/dashboard': (context) => const DashBoard(),
       },
     );

@@ -30,8 +30,8 @@ class AttendanceCtrl {
   }
 
   static void insertAttendance(int id, bool isCheckIn) async {
-    final uri = Uri.http(DbConfig.ip, '/attendance-system/public/insert');
-
+    // final uri = Uri.https(DbConfig.ip, '/attendance-system/public/insert');
+    final uri = Uri.https(DbConfig.ip, '/insert');
     debugPrint(uri.toString());
     final header = {"Content-Type": "application/json"};
     var req = http.Request('POST', uri);
@@ -45,5 +45,14 @@ class AttendanceCtrl {
     } else {
       debugPrint("ERROR - Status Code: ${response.statusCode}");
     }
+  }
+
+  static Future<bool> checkConnection() async {
+    final uri = Uri.https(DbConfig.ip);
+    var req = http.Request('GET', uri);
+    final header = {"Content-Type": "text/html"};
+    req.headers.addAll(header);
+    final response = await req.send();
+    return response.statusCode == 200;
   }
 }
