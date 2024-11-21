@@ -4,9 +4,8 @@ import 'package:attendance_system/controller/attendance.dart';
 import 'package:flutter/material.dart';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 import 'package:flutter/services.dart';
-import 'package:attendance_system/predictor.dart';
-import 'package:attendance_system/db/database.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+
 
 class CameraView extends StatefulWidget {
   const CameraView({super.key});
@@ -16,7 +15,6 @@ class CameraView extends StatefulWidget {
 
 class _CameraViewState extends State<CameraView> {
   String _cameraInfo = 'Unknown';
-  Predictor predictor = Predictor();
   List<CameraDescription> _cameras = <CameraDescription>[];
   int _cameraIndex = 0;
   int _cameraId = -1;

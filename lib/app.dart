@@ -1,4 +1,3 @@
-import 'package:attendance_system/db/database.dart';
 import 'package:attendance_system/view/settings.dart';
 // import 'package:attendance_system/view/dashboard.dart';
 import 'package:flutter/material.dart';
